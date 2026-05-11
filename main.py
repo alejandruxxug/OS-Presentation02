@@ -50,6 +50,7 @@ DOCDB_COLLECTION = os.environ.get("DOCDB_COLLECTION", "products")
 # DocumentDB requires TLS; AWS publishes a CA bundle that Lambda layers usually
 # ship at /opt/global-bundle.pem or similar. Adjust path as needed.
 TLS_CA_FILE = os.environ.get("TLS_CA_FILE", "/opt/global-bundle.pem")
+API_ROOT_PATH = os.environ.get("API_ROOT_PATH", "")
 
 # ---------------------------------------------------------------------------
 # Mongo client (created once per Lambda container — re-used across invocations)
@@ -146,6 +147,7 @@ app = FastAPI(
     description="RESTful API demonstrating DocumentDB operations via HTTP verbs.",
     version="1.0.0",
     lifespan=lifespan,
+    root_path=API_ROOT_PATH,
 )
 
 

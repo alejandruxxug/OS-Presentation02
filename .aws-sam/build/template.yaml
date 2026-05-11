@@ -47,6 +47,7 @@ Resources:
           DOCDB_COLLECTION:
             Ref: DocDbCollection
           TLS_CA_FILE: /opt/global-bundle.pem
+          API_ROOT_PATH: /Prod
       VpcConfig:
         SubnetIds:
           Ref: VpcSubnetIds
