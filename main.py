@@ -348,7 +348,7 @@ def stats_by_category():
                 "_id": 0,
                 "category": "$_id",
                 "product_count": 1,
-                "avg_price": {"$round": ["$avg_price", 2]},
+                "avg_price": "$avg_price",
                 "total_stock": 1,
                 "min_price": 1,
                 "max_price": 1,

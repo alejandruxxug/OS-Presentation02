@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'Amazon DocumentDB Demo API FastAPI on Lambda, behind API Gateway, connected
+  to a DocumentDB cluster inside a VPC.
+
+  '
+Parameters:
+  DocDbUri:
+    Type: String
+    NoEcho: true
+    Description: 'MongoDB connection string for the DocumentDB cluster. Example: mongodb://user:password@my-cluster.cluster-xxxx.us-east-1.docdb.amazonaws.com:27017/?tls=true&replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false
+
+      '
+  DocDbName:
+    Type: String
+    Default: demo
+  DocDbCollection:
+    Type: String
+    Default: products
+  VpcSubnetIds:
+    Type: CommaDelimitedList
+    Description: Private subnet IDs where the Lambda will run (same VPC as DocumentDB).
+  VpcSecurityGroupIds:
+    Type: CommaDelimitedList
+    Description: Security group IDs allowed to talk to DocumentDB on port 27017.
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 512
+    Runtime: python3.11
+    Architectures:
+    - x86_64
+Resources:
+  DocDbApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: documentdb-demo-api
+      CodeUri: DocDbApiFunction
+      Handler: main.handler
+      Description: FastAPI app exposing RESTful endpoints over Amazon DocumentDB.
+      Environment:
+        Variables:
+          DOCDB_URI:
+            Ref: DocDbUri
+          DOCDB_DB_NAME:
+            Ref: DocDbName
+          DOCDB_COLLECTION:
+            Ref: DocDbCollection
+          TLS_CA_FILE: /opt/global-bundle.pem
+      VpcConfig:
+        SubnetIds:
+          Ref: VpcSubnetIds
+        SecurityGroupIds:
+          Ref: VpcSecurityGroupIds
+      Layers:
+      - Fn::Sub: arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:layer:docdb-ca-bundle:1
+      Events:
+        ApiRoot:
+          Type: Api
+          Properties:
+            Path: /
+            Method: ANY
+        ApiAny:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
+    Metadata:
+      SamResourceId: DocDbApiFunction
+Outputs:
+  ApiUrl:
+    Description: Base URL of the deployed API
+    Value:
+      Fn::Sub: https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod
